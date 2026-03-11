@@ -32,7 +32,6 @@ func IsValidFeedItem(i gofeed.Item) bool {
 	title := i.Title
 	link := i.Link
 	pubDate := i.Published
-	guid := i.GUID
 
-	return title != "" && link != "" && pubDate != "" && guid != ""
+	return title != "" && link != "" && pubDate != ""
 }

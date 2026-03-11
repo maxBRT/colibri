@@ -1,6 +1,9 @@
 package rss
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Post struct {
 	Title       string    `json:"title"`
@@ -19,6 +22,10 @@ func NewPost(
 	guid string,
 	sourceID string,
 ) *Post {
+	if guid == "" {
+		guid = fmt.Sprintf("%s.%s", link, "guid")
+	}
+
 	return &Post{
 		Title:       title,
 		Link:        link,
