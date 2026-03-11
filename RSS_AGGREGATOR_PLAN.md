@@ -43,9 +43,7 @@ id: "the-verge-tech"
 name: "The Verge"
 url: "https://www.theverge.com/rss/index.xml"
 category: "technology"
-refresh_interval: "15m"
 ```
-
 ---
 
 ## 3. Database Schema (PostgreSQL)
