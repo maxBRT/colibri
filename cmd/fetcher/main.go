@@ -8,14 +8,17 @@ import (
 )
 
 func main() {
-	sources, err := rss.ReadSources("./feeds")
+	sources, err := rss.ReadSources("./sources")
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
 	for _, s := range sources {
-		fmt.Println(s.ID)
-		fmt.Println(s.Name)
-		fmt.Println(s.URL)
-		fmt.Println(s.Category)
+		posts, err := rss.FetchAndParse(s)
+		if err != nil {
+			log.Fatalf("%s", err)
+		}
+		for _, p := range posts {
+			fmt.Printf("%s, %s\n", p.Title, p.Description)
+		}
 	}
 }

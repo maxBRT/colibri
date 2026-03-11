@@ -4,6 +4,8 @@ package utils
 import (
 	"net/url"
 	"regexp"
+
+	"github.com/mmcdole/gofeed"
 )
 
 func IsValidSlug(s string) bool {
@@ -24,4 +26,13 @@ func IsValidURL(s string) bool {
 func IsValidCategory(s string) bool {
 	regex := regexp.MustCompile("^[A-Z][a-z]*$")
 	return regex.MatchString(s)
+}
+
+func IsValidFeedItem(i gofeed.Item) bool {
+	title := i.Title
+	link := i.Link
+	pubDate := i.Published
+	guid := i.GUID
+
+	return title != "" && link != "" && pubDate != "" && guid != ""
 }
