@@ -1,0 +1,3 @@
+id,name,url,category
+xkcd,xkcd,https://xkcd.com/rss.xml,Humour
+hacker-news,Hacker News,https://news.ycombinator.com/rss,Technology

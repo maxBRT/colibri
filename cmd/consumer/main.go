@@ -27,10 +27,22 @@ func main() {
 	err = pubsub.SubscribeJSON(
 		conn,
 		r.ColibriExchange,
-		r.ColibriFeedQueue,
-		r.ColibriFeedKey,
+		r.ColibriPostsQueue,
+		r.ColibriPostsKey,
 		pubsub.DurableQueue,
 		handlerPost(),
+	)
+	if err != nil {
+		log.Printf("%s", err)
+	}
+
+	err = pubsub.SubscribeJSON(
+		conn,
+		r.ColibriExchange,
+		r.ColibriSourcesQueue,
+		r.ColibriSourcesKey,
+		pubsub.DurableQueue,
+		handlerSources(),
 	)
 	if err != nil {
 		log.Printf("%s", err)
@@ -45,6 +57,13 @@ func main() {
 func handlerPost() func(rss.Post) pubsub.AckType {
 	return func(p rss.Post) pubsub.AckType {
 		fmt.Printf("Title: %s\nLink: %s\n", p.Title, p.Link)
+		return pubsub.Ack
+	}
+}
+
+func handlerSources() func(rss.Source) pubsub.AckType {
+	return func(s rss.Source) pubsub.AckType {
+		fmt.Printf("id: %s\nname: %s\nurl: %s\ncategory: %s\n", s.ID, s.Name, s.URL, s.Category)
 		return pubsub.Ack
 	}
 }

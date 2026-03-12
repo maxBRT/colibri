@@ -7,31 +7,35 @@ import (
 )
 
 func TestReadSources(t *testing.T) {
-	// Test that the read sources ignore everything but yaml files
 	tmpDir := t.TempDir()
+	csvPath := filepath.Join(tmpDir, "sources.csv")
 
-	yamlFilePath := filepath.Join(tmpDir, "test-source.yaml")
-	content := []byte("id: 123\nname: Test Source\nurl: https://valid.com/rss\ncategory: Technology")
-	if err := os.WriteFile(yamlFilePath, content, 0o644); err != nil {
-		t.Fatal(err)
-	}
-	jsonFilePath := filepath.Join(tmpDir, "test-source.json")
-	content = []byte("doesnt matter")
-	if err := os.WriteFile(jsonFilePath, content, 0o644); err != nil {
-		t.Fatal(err)
-	}
-	dirPath := filepath.Join(tmpDir, "directory")
-	if err := os.Mkdir(dirPath, 0o755); err != nil {
+	content := []byte("id,name,url,category\n123,Test Source,https://valid.com/rss,Technology\n")
+	if err := os.WriteFile(csvPath, content, 0o644); err != nil {
 		t.Fatal(err)
 	}
 
-	sources, err := ReadSources(tmpDir)
+	sources, err := ReadSources(csvPath)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
 	if len(sources) != 1 {
-		t.Errorf("Expected 1 source, got %d", len(sources))
+		t.Fatalf("Expected 1 source, got %d", len(sources))
+	}
+
+	s := sources[0]
+	if s.ID != "123" {
+		t.Errorf("Expected ID '123', got '%s'", s.ID)
+	}
+	if s.Name != "Test Source" {
+		t.Errorf("Expected Name 'Test Source', got '%s'", s.Name)
+	}
+	if s.URL != "https://valid.com/rss" {
+		t.Errorf("Expected URL 'https://valid.com/rss', got '%s'", s.URL)
+	}
+	if s.Category != "Technology" {
+		t.Errorf("Expected Category 'Technology', got '%s'", s.Category)
 	}
 }
 

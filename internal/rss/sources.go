@@ -2,49 +2,61 @@
 package rss
 
 import (
+	"encoding/csv"
+	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 
-	"gopkg.in/yaml.v3"
 	"www.github.com/maxbrt/colibri/internal/utils"
 )
 
 type Source struct {
-	ID       string `yaml:"id"`
-	Name     string `yaml:"name"`
-	URL      string `yaml:"url"`
-	Category string `yaml:"category"`
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	URL      string `json:"url"`
+	Category string `json:"category"`
 }
 
-func ReadSources(dirPath string) ([]Source, error) {
-	entries, err := os.ReadDir(dirPath)
+func ReadSources(filePath string) ([]Source, error) {
+	f, err := os.Open(filePath)
 	if err != nil {
-		log.Printf("Error reading directory %s | %s", dirPath, err)
+		log.Printf("Error opening file %s | %s", filePath, err)
+		return nil, err
+	}
+	defer f.Close()
+
+	reader := csv.NewReader(f)
+	records, err := reader.ReadAll()
+	if err != nil {
+		log.Printf("Error reading CSV %s | %s", filePath, err)
 		return nil, err
 	}
 
+	if len(records) < 2 {
+		return nil, fmt.Errorf("CSV file %s has no data rows", filePath)
+	}
+
+	header := records[0]
+	colIndex := make(map[string]int, len(header))
+	for i, col := range header {
+		colIndex[col] = i
+	}
+
+	requiredCols := []string{"id", "name", "url", "category"}
+	for _, col := range requiredCols {
+		if _, ok := colIndex[col]; !ok {
+			return nil, fmt.Errorf("CSV file %s missing required column: %s", filePath, col)
+		}
+	}
+
 	var sources []Source
-
-	for _, entry := range entries {
-		if entry.IsDir() || filepath.Ext(entry.Name()) != ".yaml" {
-			continue
-		}
-
-		filePath := filepath.Join(dirPath, entry.Name())
-		content, err := os.ReadFile(filePath)
-		if err != nil {
-			log.Printf("Error reading file %s | %s", filePath, err)
-			return nil, err
-		}
-
-		s := Source{}
-		if err := yaml.Unmarshal([]byte(content), &s); err != nil {
-			log.Printf("Error unmarshalling file %s | %s", filePath, err)
-			return nil, err
-		}
-
-		sources = append(sources, s)
+	for _, row := range records[1:] {
+		sources = append(sources, Source{
+			ID:       row[colIndex["id"]],
+			Name:     row[colIndex["name"]],
+			URL:      row[colIndex["url"]],
+			Category: row[colIndex["category"]],
+		})
 	}
 
 	return sources, nil

@@ -22,8 +22,8 @@ func main() {
 	ch, _, err := pubsub.DeclareAndBind(
 		conn,
 		r.ColibriExchange,
-		r.ColibriFeedQueue,
-		r.ColibriFeedKey,
+		r.ColibriPostsQueue,
+		r.ColibriPostsKey,
 		pubsub.DurableQueue,
 	)
 	if err != nil {
@@ -32,7 +32,7 @@ func main() {
 	}
 	defer ch.Close()
 
-	sources, err := rss.ReadSources("./sources")
+	sources, err := rss.ReadSources("./sources/sources.csv")
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
@@ -41,6 +41,15 @@ func main() {
 
 	for _, s := range sources {
 		wg.Add(1)
+
+		if err := pubsub.PublishJSON(
+			ch,
+			r.ColibriExchange,
+			r.ColibriSourcesKey,
+			s); err != nil {
+			log.Printf("%s", err)
+			os.Exit(1)
+		}
 
 		go func(s rss.Source) {
 			defer wg.Done()
@@ -54,7 +63,7 @@ func main() {
 				if err := pubsub.PublishJSON(
 					ch,
 					r.ColibriExchange,
-					r.ColibriFeedKey,
+					r.ColibriPostsKey,
 					p); err != nil {
 					log.Printf("%s", err)
 					os.Exit(1)

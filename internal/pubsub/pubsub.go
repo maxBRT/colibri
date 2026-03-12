@@ -47,6 +47,18 @@ func PublishJSON[T any](ch *amqp.Channel, exchange, key string, val T) error {
 	return nil
 }
 
+func DeclareExchange(ch *amqp.Channel, exchange string) error {
+	return ch.ExchangeDeclare(
+		exchange,
+		"topic",
+		true,  // durable
+		false, // auto-deleted
+		false, // internal
+		false, // no-wait
+		nil,
+	)
+}
+
 func DeclareAndBind(
 	conn *amqp.Connection,
 	exchange,
@@ -56,6 +68,10 @@ func DeclareAndBind(
 ) (*amqp.Channel, amqp.Queue, error) {
 	ch, err := conn.Channel()
 	if err != nil {
+		return nil, amqp.Queue{}, err
+	}
+
+	if err := DeclareExchange(ch, exchange); err != nil {
 		return nil, amqp.Queue{}, err
 	}
 
