@@ -8,7 +8,7 @@ import (
 type Post struct {
 	Title       string    `json:"title"`
 	Link        string    `json:"link"`
-	Description string    `json:"description"`
+	Description string    `json:"description,omitempty"`
 	PubDate     time.Time `json:"pubDate"`
 	GUID        string    `json:"guid"`
 	SourceID    string    `json:"sourceId"`
