@@ -17,6 +17,7 @@ func main() {
 		log.Printf("%s", err)
 		os.Exit(1)
 	}
+	defer conn.Close()
 
 	ch, _, err := pubsub.DeclareAndBind(
 		conn,
@@ -29,6 +30,7 @@ func main() {
 		log.Printf("%s", err)
 		os.Exit(1)
 	}
+	defer ch.Close()
 
 	sources, err := rss.ReadSources("./sources")
 	if err != nil {
@@ -61,6 +63,4 @@ func main() {
 		}(s)
 	}
 	wg.Wait()
-	conn.Close()
-	ch.Close()
 }
