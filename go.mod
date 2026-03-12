@@ -4,6 +4,7 @@ go 1.26.1
 
 require (
 	github.com/mmcdole/gofeed v1.3.0
+	github.com/rabbitmq/amqp091-go v1.10.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
