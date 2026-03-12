@@ -11,12 +11,8 @@ import (
 	"www.github.com/maxbrt/colibri/internal/rss"
 )
 
-const (
-	ConnectionString = "amqp://guest:guest@localhost:5672/"
-)
-
 func main() {
-	conn, err := amqp.Dial(ConnectionString)
+	conn, err := amqp.Dial(r.ConnectionString)
 	if err != nil {
 		log.Printf("%s", err)
 		os.Exit(1)
