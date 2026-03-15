@@ -17,8 +17,8 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	driver := os.Getenv("GOOSE_DRIVER")
-	dbString := os.Getenv("GOOSE_DBSTRING")
+	driver := os.Getenv("DB_DRIVER")
+	dbString := os.Getenv("DB_STRING")
 	migrationDir := os.Getenv("GOOSE_MIGRATION_DIR")
 
 	db, err := sql.Open(driver, dbString)

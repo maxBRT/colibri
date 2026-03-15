@@ -32,6 +32,8 @@ services:
       dockerfile: Dockerfile.consumer
     environment:
       AMQP_URL: "amqp://guest:guest@rabbitmq:5672/"
+      DB_DRIVER: "postgres"
+      DB_STRING: "postgresql://postgres:postgres@postgres:5432/colibri_db?sslmode=disable"
     depends_on:
       rabbitmq:
         condition: service_healthy
