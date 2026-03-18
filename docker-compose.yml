@@ -41,5 +41,19 @@ services:
         condition: service_healthy
     restart: on-failure
 
+  api:
+    ports:
+      - "8080:8080"
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    environment:
+      DB_DRIVER: "postgres"
+      DB_STRING: "postgresql://postgres:postgres@postgres:5432/colibri_db?sslmode=disable"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+
 volumes:
   pgdata:
