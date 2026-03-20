@@ -48,7 +48,7 @@ func FetchAndParse(source Source) ([]*Post, error) {
 		p := NewPost(
 			i.Title,
 			i.Link,
-			i.Description,
+			"",
 			*i.PublishedParsed,
 			i.GUID,
 			source.ID,

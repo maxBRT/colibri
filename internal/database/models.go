@@ -17,6 +17,7 @@ type Post struct {
 	Description sql.NullString
 	Link        string
 	Guid        string
+	PubDate     time.Time
 	SourceID    string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time

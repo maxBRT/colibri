@@ -82,6 +82,7 @@ func handlerPost(db *database.Queries) func(rss.Post) pubsub.AckType {
 				},
 				Link:     p.Link,
 				Guid:     p.GUID,
+				PubDate:  p.PubDate,
 				SourceID: p.SourceID,
 			})
 		if err != nil {

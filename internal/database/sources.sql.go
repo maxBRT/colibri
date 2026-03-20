@@ -7,6 +7,8 @@ package database
 
 import (
 	"context"
+
+	"github.com/lib/pq"
 )
 
 const createSource = `-- name: CreateSource :one
@@ -74,12 +76,73 @@ func (q *Queries) GetSource(ctx context.Context, id string) (Source, error) {
 	return i, err
 }
 
+const listCategories = `-- name: ListCategories :many
+SELECT DISTINCT category FROM sources
+`
+
+func (q *Queries) ListCategories(ctx context.Context) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, listCategories)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var category string
+		if err := rows.Scan(&category); err != nil {
+			return nil, err
+		}
+		items = append(items, category)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listSources = `-- name: ListSources :many
 SELECT id, name, url, category, created_at, updated_at FROM sources
 `
 
 func (q *Queries) ListSources(ctx context.Context) ([]Source, error) {
 	rows, err := q.db.QueryContext(ctx, listSources)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Source
+	for rows.Next() {
+		var i Source
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Url,
+			&i.Category,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listSourcesByCategory = `-- name: ListSourcesByCategory :many
+SELECT id, name, url, category, created_at, updated_at FROM sources WHERE LOWER(category) = ANY($1::text[])
+`
+
+func (q *Queries) ListSourcesByCategory(ctx context.Context, dollar_1 []string) ([]Source, error) {
+	rows, err := q.db.QueryContext(ctx, listSourcesByCategory, pq.Array(dollar_1))
 	if err != nil {
 		return nil, err
 	}

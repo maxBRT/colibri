@@ -20,3 +20,9 @@ DELETE FROM sources WHERE id == $1;
 -- name: ListSources :many
 SELECT * FROM sources;
 
+-- name: ListCategories :many
+SELECT DISTINCT category FROM sources;
+
+
+-- name: ListSourcesByCategory :many
+SELECT * FROM sources WHERE LOWER(category) = ANY($1::text[]);

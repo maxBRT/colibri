@@ -8,8 +8,10 @@ package database
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 const createPost = `-- name: CreatePost :one
@@ -18,11 +20,12 @@ INSERT INTO posts  (
   description,
   link,
   guid,
+  pub_date,
   source_id
-) VALUES ($1,$2,$3,$4,$5)
+) VALUES ($1,$2,$3,$4,$5, $6)
 ON CONFLICT (guid) 
 DO UPDATE SET guid = EXCLUDED.guid
-RETURNING id, title, description, link, guid, source_id, created_at, updated_at
+RETURNING id, title, description, link, guid, pub_date, source_id, created_at, updated_at
 `
 
 type CreatePostParams struct {
@@ -30,6 +33,7 @@ type CreatePostParams struct {
 	Description sql.NullString
 	Link        string
 	Guid        string
+	PubDate     time.Time
 	SourceID    string
 }
 
@@ -39,6 +43,7 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		arg.Description,
 		arg.Link,
 		arg.Guid,
+		arg.PubDate,
 		arg.SourceID,
 	)
 	var i Post
@@ -48,6 +53,7 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		&i.Description,
 		&i.Link,
 		&i.Guid,
+		&i.PubDate,
 		&i.SourceID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -66,7 +72,7 @@ func (q *Queries) DeletePost(ctx context.Context, id uuid.UUID) error {
 }
 
 const getPost = `-- name: GetPost :one
-SELECT id, title, description, link, guid, source_id, created_at, updated_at
+SELECT id, title, description, link, guid, pub_date, source_id, created_at, updated_at
   FROM posts
   WHERE id == $1
 `
@@ -80,6 +86,7 @@ func (q *Queries) GetPost(ctx context.Context, id uuid.UUID) (Post, error) {
 		&i.Description,
 		&i.Link,
 		&i.Guid,
+		&i.PubDate,
 		&i.SourceID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -88,7 +95,7 @@ func (q *Queries) GetPost(ctx context.Context, id uuid.UUID) (Post, error) {
 }
 
 const listPosts = `-- name: ListPosts :many
-SELECT id, title, description, link, guid, source_id, created_at, updated_at FROM posts
+SELECT id, title, description, link, guid, pub_date, source_id, created_at, updated_at FROM posts
 `
 
 func (q *Queries) ListPosts(ctx context.Context) ([]Post, error) {
@@ -106,6 +113,7 @@ func (q *Queries) ListPosts(ctx context.Context) ([]Post, error) {
 			&i.Description,
 			&i.Link,
 			&i.Guid,
+			&i.PubDate,
 			&i.SourceID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -124,13 +132,13 @@ func (q *Queries) ListPosts(ctx context.Context) ([]Post, error) {
 }
 
 const listPostsForSource = `-- name: ListPostsForSource :many
-SELECT id, title, description, link, guid, source_id, created_at, updated_at
+SELECT id, title, description, link, guid, pub_date, source_id, created_at, updated_at
   FROM posts
-  WHERE source_id == $1
+  WHERE LOWER(source_id) = ANY($1::TEXT[])
 `
 
-func (q *Queries) ListPostsForSource(ctx context.Context, sourceID string) ([]Post, error) {
-	rows, err := q.db.QueryContext(ctx, listPostsForSource, sourceID)
+func (q *Queries) ListPostsForSource(ctx context.Context, dollar_1 []string) ([]Post, error) {
+	rows, err := q.db.QueryContext(ctx, listPostsForSource, pq.Array(dollar_1))
 	if err != nil {
 		return nil, err
 	}
@@ -144,6 +152,7 @@ func (q *Queries) ListPostsForSource(ctx context.Context, sourceID string) ([]Po
 			&i.Description,
 			&i.Link,
 			&i.Guid,
+			&i.PubDate,
 			&i.SourceID,
 			&i.CreatedAt,
 			&i.UpdatedAt,

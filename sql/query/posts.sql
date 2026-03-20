@@ -4,8 +4,9 @@ INSERT INTO posts  (
   description,
   link,
   guid,
+  pub_date,
   source_id
-) VALUES ($1,$2,$3,$4,$5)
+) VALUES ($1,$2,$3,$4,$5, $6)
 ON CONFLICT (guid) 
 DO UPDATE SET guid = EXCLUDED.guid
 RETURNING *;
@@ -22,8 +23,7 @@ SELECT *
 -- name: ListPostsForSource :many
 SELECT *
   FROM posts
-  WHERE source_id == $1;
-
+  WHERE LOWER(source_id) = ANY($1::TEXT[]);
 
 -- name: ListPosts :many
 SELECT * FROM posts;
