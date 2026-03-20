@@ -28,7 +28,7 @@ func NewServer(db *database.Queries) *Server {
 func (s *Server) MountHandlers() {
 	s.Router.Use(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
+		AllowedMethods: []string{"GET", "OPTIONS"},
 		AllowedHeaders: []string{"Content-Type"},
 		MaxAge:         300,
 	}))
@@ -103,6 +103,7 @@ func (s *Server) MountHandlers() {
 
 		r.Get("/posts", func(w http.ResponseWriter, r *http.Request) {
 			q := r.URL.Query()
+
 			sourceIDs := q["sources"]
 			var posts []database.Post
 
@@ -133,6 +134,7 @@ func (s *Server) MountHandlers() {
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
+
 			w.WriteHeader(200)
 			w.Write(c)
 		})

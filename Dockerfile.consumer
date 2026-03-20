@@ -6,6 +6,8 @@ RUN go mod download
 COPY . .
 RUN go build -o /consumer ./cmd/consumer
 
+RUN mkdir -p /app/config
+
 FROM alpine:latest
 COPY --from=build /consumer /consumer
 CMD ["/consumer"]

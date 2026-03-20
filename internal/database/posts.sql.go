@@ -25,7 +25,7 @@ INSERT INTO posts  (
 ) VALUES ($1,$2,$3,$4,$5, $6)
 ON CONFLICT (guid) 
 DO UPDATE SET guid = EXCLUDED.guid
-RETURNING id, title, description, link, guid, pub_date, source_id, created_at, updated_at
+RETURNING id, title, description, link, guid, pub_date, source_id, status, created_at, updated_at
 `
 
 type CreatePostParams struct {
@@ -55,10 +55,48 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		&i.Guid,
 		&i.PubDate,
 		&i.SourceID,
+		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const deduplicatePosts = `-- name: DeduplicatePosts :one
+INSERT INTO posts (
+  title,
+  description,
+  link,
+  guid,
+  pub_date,
+  source_id
+) 
+  VALUES ($1,$2,$3,$4,$5,$6) 
+  ON CONFLICT (guid) DO NOTHING
+  RETURNING guid
+`
+
+type DeduplicatePostsParams struct {
+	Title       string
+	Description sql.NullString
+	Link        string
+	Guid        string
+	PubDate     time.Time
+	SourceID    string
+}
+
+func (q *Queries) DeduplicatePosts(ctx context.Context, arg DeduplicatePostsParams) (string, error) {
+	row := q.db.QueryRowContext(ctx, deduplicatePosts,
+		arg.Title,
+		arg.Description,
+		arg.Link,
+		arg.Guid,
+		arg.PubDate,
+		arg.SourceID,
+	)
+	var guid string
+	err := row.Scan(&guid)
+	return guid, err
 }
 
 const deletePost = `-- name: DeletePost :exec
@@ -72,7 +110,7 @@ func (q *Queries) DeletePost(ctx context.Context, id uuid.UUID) error {
 }
 
 const getPost = `-- name: GetPost :one
-SELECT id, title, description, link, guid, pub_date, source_id, created_at, updated_at
+SELECT id, title, description, link, guid, pub_date, source_id, status, created_at, updated_at
   FROM posts
   WHERE id == $1
 `
@@ -88,6 +126,7 @@ func (q *Queries) GetPost(ctx context.Context, id uuid.UUID) (Post, error) {
 		&i.Guid,
 		&i.PubDate,
 		&i.SourceID,
+		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -95,7 +134,7 @@ func (q *Queries) GetPost(ctx context.Context, id uuid.UUID) (Post, error) {
 }
 
 const listPosts = `-- name: ListPosts :many
-SELECT id, title, description, link, guid, pub_date, source_id, created_at, updated_at FROM posts
+SELECT id, title, description, link, guid, pub_date, source_id, status, created_at, updated_at FROM posts
 `
 
 func (q *Queries) ListPosts(ctx context.Context) ([]Post, error) {
@@ -115,6 +154,7 @@ func (q *Queries) ListPosts(ctx context.Context) ([]Post, error) {
 			&i.Guid,
 			&i.PubDate,
 			&i.SourceID,
+			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -132,7 +172,7 @@ func (q *Queries) ListPosts(ctx context.Context) ([]Post, error) {
 }
 
 const listPostsForSource = `-- name: ListPostsForSource :many
-SELECT id, title, description, link, guid, pub_date, source_id, created_at, updated_at
+SELECT id, title, description, link, guid, pub_date, source_id, status, created_at, updated_at
   FROM posts
   WHERE LOWER(source_id) = ANY($1::TEXT[])
 `
@@ -154,6 +194,7 @@ func (q *Queries) ListPostsForSource(ctx context.Context, dollar_1 []string) ([]
 			&i.Guid,
 			&i.PubDate,
 			&i.SourceID,
+			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -168,4 +209,38 @@ func (q *Queries) ListPostsForSource(ctx context.Context, dollar_1 []string) ([]
 		return nil, err
 	}
 	return items, nil
+}
+
+const updatePost = `-- name: UpdatePost :exec
+UPDATE posts
+  SET title = $1,
+    description = $2,
+    link = $3,
+    guid = $4,
+    pub_date = $5,
+    source_id = $6,
+    status = 'done'
+  WHERE guid = $4
+  RETURNING id, title, description, link, guid, pub_date, source_id, status, created_at, updated_at
+`
+
+type UpdatePostParams struct {
+	Title       string
+	Description sql.NullString
+	Link        string
+	Guid        string
+	PubDate     time.Time
+	SourceID    string
+}
+
+func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) error {
+	_, err := q.db.ExecContext(ctx, updatePost,
+		arg.Title,
+		arg.Description,
+		arg.Link,
+		arg.Guid,
+		arg.PubDate,
+		arg.SourceID,
+	)
+	return err
 }

@@ -6,10 +6,54 @@ package database
 
 import (
 	"database/sql"
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+type PostStatus string
+
+const (
+	PostStatusProcessing PostStatus = "processing"
+	PostStatusDone       PostStatus = "done"
+)
+
+func (e *PostStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PostStatus(s)
+	case string:
+		*e = PostStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PostStatus: %T", src)
+	}
+	return nil
+}
+
+type NullPostStatus struct {
+	PostStatus PostStatus
+	Valid      bool // Valid is true if PostStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPostStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.PostStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PostStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPostStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PostStatus), nil
+}
 
 type Post struct {
 	ID          uuid.UUID
@@ -19,6 +63,7 @@ type Post struct {
 	Guid        string
 	PubDate     time.Time
 	SourceID    string
+	Status      PostStatus
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }

@@ -1,4 +1,7 @@
 -- +goose Up
+CREATE TYPE post_status AS ENUM ('processing', 'done');
+
+
 CREATE TABLE IF NOT EXISTS posts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title VARCHAR NOT NULL,
@@ -7,6 +10,7 @@ CREATE TABLE IF NOT EXISTS posts (
   guid TEXT NOT NULL UNIQUE,
   pub_date TIMESTAMP NOT NULL,
   source_id VARCHAR NOT NULL,
+  status post_status NOT NULL DEFAULT 'processing',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
   CONSTRAINT fk_sources FOREIGN KEY (source_id)

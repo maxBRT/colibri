@@ -11,6 +11,7 @@ import (
 
 	_ "github.com/lib/pq"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"www.github.com/maxbrt/colibri/cmd/consumer/agents"
 	"www.github.com/maxbrt/colibri/internal/database"
 	"www.github.com/maxbrt/colibri/internal/pubsub"
 	r "www.github.com/maxbrt/colibri/internal/routing"
@@ -72,23 +73,51 @@ func main() {
 
 func handlerPost(db *database.Queries) func(rss.Post) pubsub.AckType {
 	return func(p rss.Post) pubsub.AckType {
-		post, err := db.CreatePost(
+		id, err := db.DeduplicatePosts(
 			context.Background(),
-			database.CreatePostParams{
-				Title: p.Title,
-				Description: sql.NullString{
-					String: p.Description,
-					Valid:  p.Description != "",
-				},
-				Link:     p.Link,
-				Guid:     p.GUID,
-				PubDate:  p.PubDate,
-				SourceID: p.SourceID,
+			database.DeduplicatePostsParams{
+				Title:       p.Title,
+				Description: sql.NullString{String: p.Description, Valid: true},
+				Link:        p.Link,
+				Guid:        p.GUID,
+				PubDate:     p.PubDate,
+				SourceID:    p.SourceID,
 			})
 		if err != nil {
-			fmt.Printf("error creating post: %s", err)
+			log.Printf("%s", err)
+			return pubsub.Ack
 		}
-		fmt.Printf("Title: %s\nLink: %s\n", post.Title, post.Link)
+		if id == "" {
+			fmt.Printf("duplicate post: %s", p.GUID)
+			return pubsub.Ack
+		}
+
+		a, err := agents.NewDescriptionAgent()
+		if err != nil {
+			fmt.Printf("error creating description agent: %s", err)
+			return pubsub.NackRequeue
+		}
+		err = a.GenerateDescription(&p)
+		if err != nil {
+			fmt.Printf("error generating description: %s", err)
+			return pubsub.NackRequeue
+		}
+
+		err = db.UpdatePost(
+			context.Background(),
+			database.UpdatePostParams{
+				Title:       p.Title,
+				Description: sql.NullString{String: p.Description, Valid: true},
+				Link:        p.Link,
+				Guid:        p.GUID,
+				PubDate:     p.PubDate,
+				SourceID:    p.SourceID,
+			})
+		if err != nil {
+			fmt.Printf("error updating post: %s", err)
+			return pubsub.NackRequeue
+		}
+
 		return pubsub.Ack
 	}
 }
