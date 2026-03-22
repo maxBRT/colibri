@@ -26,11 +26,23 @@ services:
       timeout: 5s
       retries: 5
 
+  migrate:
+    build:
+      context: .
+      dockerfile: cmd/migrate/Dockerfile
+    image: maximebourret/colibri-migrate:latest
+    environment:
+      DB_DRIVER: "postgres"
+      DB_STRING: "postgresql://postgres:postgres@postgres:5432/colibri_db?sslmode=disable"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   consumer:
     build:
       context: .
       dockerfile: cmd/consumer/Dockerfile
-    image: colibri-consumer:latest
+    image: maximebourret/colibri-consumer:latest
     environment:
       AMQP_URL: "amqp://guest:guest@rabbitmq:5672/"
       DB_DRIVER: "postgres"
@@ -52,7 +64,7 @@ services:
     build:
       context: .
       dockerfile: cmd/api/Dockerfile
-    image: colibri-api:latest
+    image: maximebourret/colibri-api:latest
     environment:
       DB_DRIVER: "postgres"
       DB_STRING: "postgresql://postgres:postgres@postgres:5432/colibri_db?sslmode=disable"
@@ -65,17 +77,17 @@ services:
     build:
       context: .
       dockerfile: cmd/fetcher/Dockerfile
-    image: colibri-fetcher:latest
+    image: maximebourret/colibri-fetcher:latest
     environment:
       AMQP_URL: "amqp://guest:guest@rabbitmq:5672/"
     depends_on:
       consumer:
-        condition: service_healthy
+        condition: service_started
     deploy:
       restart_policy:
         condition: any
         delay: 4h
-    
+
 volumes:
   pgdata:
 

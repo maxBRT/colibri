@@ -4,12 +4,10 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN go build -o /fetcher ./cmd/fetcher
-
-
+RUN go build -o /migrate ./cmd/migrate
 
 RUN mkdir -p /app/sources
 FROM alpine:latest
-COPY --from=build /fetcher /fetcher
-CMD ["/fetcher"]
+COPY --from=build /migrate /migrate
+CMD ["/migrate", "up"]
 

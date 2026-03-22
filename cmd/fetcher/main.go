@@ -5,12 +5,17 @@ import (
 	"os"
 	"sync"
 
+	"embed"
+
 	amqp "github.com/rabbitmq/amqp091-go"
 	"www.github.com/maxbrt/colibri/internal/pubsub"
 	ps "www.github.com/maxbrt/colibri/internal/pubsub"
 	"www.github.com/maxbrt/colibri/internal/rss"
 	s "www.github.com/maxbrt/colibri/internal/sources"
 )
+
+//go:embed sources/sources.csv
+var SourcesFile embed.FS
 
 func main() {
 	conn, err := amqp.Dial(ps.ConnectionString)
@@ -33,7 +38,7 @@ func main() {
 	}
 	defer ch.Close()
 
-	sources, err := s.ReadSources("app/sources/sources.csv")
+	sources, err := s.ReadSources(SourcesFile, "sources/sources.csv")
 	if err != nil {
 		log.Fatalf("%s", err)
 	}

@@ -15,7 +15,7 @@ func TestReadSources(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sources, err := ReadSources(csvPath)
+	sources, err := ReadSources(os.DirFS(tmpDir), csvPath)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}

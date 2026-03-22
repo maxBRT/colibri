@@ -3,8 +3,8 @@ package sources
 import (
 	"encoding/csv"
 	"fmt"
+	"io/fs"
 	"log"
-	"os"
 
 	"www.github.com/maxbrt/colibri/internal/utils"
 )
@@ -16,15 +16,15 @@ type Source struct {
 	Category string `json:"category"`
 }
 
-func ReadSources(filePath string) ([]Source, error) {
-	f, err := os.Open(filePath)
+func ReadSources(f fs.FS, filePath string) ([]Source, error) {
+	file, err := f.Open(filePath)
 	if err != nil {
 		log.Printf("Error opening file %s | %s", filePath, err)
 		return nil, err
 	}
-	defer f.Close()
+	defer file.Close()
 
-	reader := csv.NewReader(f)
+	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	if err != nil {
 		log.Printf("Error reading CSV %s | %s", filePath, err)
