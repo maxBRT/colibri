@@ -1,10 +1,8 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <h3 align="center">Colibri API</h3>
-  <a href="https://github.com/othneildrew/Best-README-Template">
+  <h3 align="center">Colibri API</h3>  
     <img src="images/colibri_logo.png" alt="Logo" width="80" height="80">
-  </a>
 </div>
 
 <!-- ABOUT THE PROJECT -->
