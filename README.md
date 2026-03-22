@@ -1,7 +1,6 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <h3 align="center">Colibri RSS</h3>  
     <img src="images/colibri_logo.png" alt="Logo" width="400" height="400">
 </div>
 
