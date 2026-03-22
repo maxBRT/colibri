@@ -1,4 +1,4 @@
-package agents
+package posts
 
 import (
 	"context"
@@ -15,7 +15,6 @@ import (
 	"google.golang.org/adk/tool"
 	"google.golang.org/adk/tool/geminitool"
 	"google.golang.org/genai"
-	"www.github.com/maxbrt/colibri/internal/rss"
 	"www.github.com/maxbrt/colibri/internal/utils"
 )
 
@@ -63,7 +62,7 @@ func NewDescriptionAgent() (*DescriptionAgent, error) {
 	return &DescriptionAgent{Agent: descAgent}, nil
 }
 
-func (a *DescriptionAgent) GenerateDescription(p *rss.Post) error {
+func (a *DescriptionAgent) GenerateDescription(p *Post) error {
 	prompt := fmt.Sprintf("Generate a description for the post at this address: %s", p.Link)
 
 	sessionService := session.InMemoryService()

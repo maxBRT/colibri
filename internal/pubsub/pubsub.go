@@ -99,7 +99,7 @@ func SubscribeJSON[T any](
 	queueName,
 	key string,
 	queueType SimpleQueueType,
-	handler func(T) AckType,
+	listener func(T) AckType,
 ) error {
 	ch, _, err := DeclareAndBind(conn, exchange, queueName, key, queueType)
 	if err != nil {
@@ -117,7 +117,7 @@ func SubscribeJSON[T any](
 			if err != nil {
 				log.Println(err)
 			}
-			ackType := handler(target)
+			ackType := listener(target)
 			switch ackType {
 			case Ack:
 				fmt.Println("Ack")

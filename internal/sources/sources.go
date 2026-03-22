@@ -1,5 +1,4 @@
-// Package rss
-package rss
+package sources
 
 import (
 	"encoding/csv"

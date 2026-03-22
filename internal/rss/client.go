@@ -9,10 +9,12 @@ import (
 	"time"
 
 	"github.com/mmcdole/gofeed"
+	p "www.github.com/maxbrt/colibri/internal/posts"
+	s "www.github.com/maxbrt/colibri/internal/sources"
 	"www.github.com/maxbrt/colibri/internal/utils"
 )
 
-func FetchAndParse(source Source) ([]*Post, error) {
+func FetchAndParse(source s.Source) ([]*p.Post, error) {
 	c := NewRSSClient()
 	req, err := NewRSSFetchRequest(source.URL)
 	if err != nil {
@@ -39,13 +41,13 @@ func FetchAndParse(source Source) ([]*Post, error) {
 		return nil, err
 	}
 
-	var posts []*Post
+	var posts []*p.Post
 	for _, i := range feed.Items {
 		if !utils.IsValidFeedItem(*i) {
 			continue
 		}
 
-		p := NewPost(
+		post := p.NewPost(
 			i.Title,
 			i.Link,
 			"",
@@ -53,7 +55,7 @@ func FetchAndParse(source Source) ([]*Post, error) {
 			i.GUID,
 			source.ID,
 		)
-		posts = append(posts, p)
+		posts = append(posts, post)
 	}
 
 	return posts, nil

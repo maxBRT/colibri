@@ -7,24 +7,25 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"www.github.com/maxbrt/colibri/internal/pubsub"
-	r "www.github.com/maxbrt/colibri/internal/routing"
+	ps "www.github.com/maxbrt/colibri/internal/pubsub"
 	"www.github.com/maxbrt/colibri/internal/rss"
+	s "www.github.com/maxbrt/colibri/internal/sources"
 )
 
 func main() {
-	conn, err := amqp.Dial(r.ConnectionString)
+	conn, err := amqp.Dial(ps.ConnectionString)
 	if err != nil {
 		log.Printf("%s", err)
 		os.Exit(1)
 	}
 	defer conn.Close()
 
-	ch, _, err := pubsub.DeclareAndBind(
+	ch, _, err := ps.DeclareAndBind(
 		conn,
-		r.ColibriExchange,
-		r.ColibriPostsQueue,
-		r.ColibriPostsKey,
-		pubsub.DurableQueue,
+		ps.ColibriExchange,
+		ps.ColibriPostsQueue,
+		ps.ColibriPostsKey,
+		ps.DurableQueue,
 	)
 	if err != nil {
 		log.Printf("%s", err)
@@ -32,44 +33,44 @@ func main() {
 	}
 	defer ch.Close()
 
-	sources, err := rss.ReadSources("./sources/sources.csv")
+	sources, err := s.ReadSources("./sources/sources.csv")
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
 
 	var wg sync.WaitGroup
 
-	for _, s := range sources {
+	for _, source := range sources {
 		wg.Add(1)
 
-		if err := pubsub.PublishJSON(
+		if err := ps.PublishJSON(
 			ch,
-			r.ColibriExchange,
-			r.ColibriSourcesKey,
-			s); err != nil {
+			ps.ColibriExchange,
+			ps.ColibriSourcesKey,
+			source); err != nil {
 			log.Printf("%s", err)
 			os.Exit(1)
 		}
 
-		go func(s rss.Source) {
+		go func(source s.Source) {
 			defer wg.Done()
 
-			posts, err := rss.FetchAndParse(s)
+			posts, err := rss.FetchAndParse(source)
 			if err != nil {
 				log.Printf("%s", err)
 				os.Exit(1)
 			}
-			for _, p := range posts {
+			for _, post := range posts {
 				if err := pubsub.PublishJSON(
 					ch,
-					r.ColibriExchange,
-					r.ColibriPostsKey,
-					p); err != nil {
+					ps.ColibriExchange,
+					ps.ColibriPostsKey,
+					post); err != nil {
 					log.Printf("%s", err)
 					os.Exit(1)
 				}
 			}
-		}(s)
+		}(source)
 	}
 	wg.Wait()
 }

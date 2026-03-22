@@ -1,5 +1,4 @@
-// Package routing regroup most of the constant required for RabbitMQ
-package routing
+package pubsub
 
 import "os"
 

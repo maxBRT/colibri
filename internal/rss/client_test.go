@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	s "www.github.com/maxbrt/colibri/internal/sources"
 )
 
 func TestFetchAndParse(t *testing.T) {
@@ -44,7 +46,7 @@ func TestFetchAndParse(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			server := MockFeedServer(tc.body)
 			defer server.Close()
-			source := Source{
+			source := s.Source{
 				ID:       "test",
 				Name:     "Test",
 				URL:      server.URL,
@@ -80,7 +82,7 @@ func TestFetchAndParse_Gzip(t *testing.T) {
 	}))
 	defer server.Close()
 
-	source := Source{
+	source := s.Source{
 		ID:       "test",
 		Name:     "Test",
 		URL:      server.URL,

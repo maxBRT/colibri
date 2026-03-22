@@ -8,8 +8,8 @@ import (
 	"os"
 
 	_ "github.com/lib/pq"
-	"www.github.com/maxbrt/colibri/cmd/api/server"
 	"www.github.com/maxbrt/colibri/internal/database"
+	"www.github.com/maxbrt/colibri/internal/server"
 )
 
 func main() {
@@ -24,8 +24,8 @@ func main() {
 	defer dbConn.Close()
 
 	db := database.New(dbConn)
-	s := server.NewServer(db)
-	s.MountHandlers()
+	s := server.NewServer()
+	s.MountHandlers(db)
 
 	fmt.Println("Listening on port 8080")
 	if err := http.ListenAndServe(":8080", s.Router); err != nil {

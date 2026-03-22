@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -11,11 +10,11 @@ import (
 
 	_ "github.com/lib/pq"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"www.github.com/maxbrt/colibri/cmd/consumer/agents"
 	"www.github.com/maxbrt/colibri/internal/database"
+	p "www.github.com/maxbrt/colibri/internal/posts"
 	"www.github.com/maxbrt/colibri/internal/pubsub"
-	r "www.github.com/maxbrt/colibri/internal/routing"
-	"www.github.com/maxbrt/colibri/internal/rss"
+	ps "www.github.com/maxbrt/colibri/internal/pubsub"
+	s "www.github.com/maxbrt/colibri/internal/sources"
 )
 
 func main() {
@@ -34,7 +33,7 @@ func main() {
 
 	db := database.New(dbConn)
 
-	conn, err := amqp.Dial(r.ConnectionString)
+	conn, err := amqp.Dial(ps.ConnectionString)
 	if err != nil {
 		log.Printf("%s", err)
 		os.Exit(1)
@@ -43,11 +42,11 @@ func main() {
 
 	err = pubsub.SubscribeJSON(
 		conn,
-		r.ColibriExchange,
-		r.ColibriPostsQueue,
-		r.ColibriPostsKey,
-		pubsub.DurableQueue,
-		handlerPost(db),
+		ps.ColibriExchange,
+		ps.ColibriPostsQueue,
+		ps.ColibriPostsKey,
+		ps.DurableQueue,
+		p.Listener(db),
 	)
 	if err != nil {
 		log.Printf("%s", err)
@@ -55,11 +54,11 @@ func main() {
 
 	err = pubsub.SubscribeJSON(
 		conn,
-		r.ColibriExchange,
-		r.ColibriSourcesQueue,
-		r.ColibriSourcesKey,
-		pubsub.DurableQueue,
-		handlerSources(db),
+		ps.ColibriExchange,
+		ps.ColibriSourcesQueue,
+		ps.ColibriSourcesKey,
+		ps.DurableQueue,
+		s.Listener(db),
 	)
 	if err != nil {
 		log.Printf("%s", err)
@@ -69,80 +68,4 @@ func main() {
 	<-sigs
 	fmt.Println("")
 	fmt.Println("Program killed")
-}
-
-func handlerPost(db *database.Queries) func(rss.Post) pubsub.AckType {
-	return func(p rss.Post) pubsub.AckType {
-		id, err := db.DeduplicatePosts(
-			context.Background(),
-			database.DeduplicatePostsParams{
-				Title:       p.Title,
-				Description: sql.NullString{String: p.Description, Valid: true},
-				Link:        p.Link,
-				Guid:        p.GUID,
-				PubDate:     p.PubDate,
-				SourceID:    p.SourceID,
-			})
-		if err != nil {
-			log.Printf("%s", err)
-			return pubsub.Ack
-		}
-		if id == "" {
-			fmt.Printf("duplicate post: %s", p.GUID)
-			return pubsub.Ack
-		}
-
-		a, err := agents.NewDescriptionAgent()
-		if err != nil {
-			fmt.Printf("error creating description agent: %s", err)
-			return pubsub.NackRequeue
-		}
-		err = a.GenerateDescription(&p)
-		if err != nil {
-			fmt.Printf("error generating description: %s", err)
-			return pubsub.NackRequeue
-		}
-
-		err = db.UpdatePost(
-			context.Background(),
-			database.UpdatePostParams{
-				Title:       p.Title,
-				Description: sql.NullString{String: p.Description, Valid: true},
-				Link:        p.Link,
-				Guid:        p.GUID,
-				PubDate:     p.PubDate,
-				SourceID:    p.SourceID,
-			})
-		if err != nil {
-			fmt.Printf("error updating post: %s", err)
-			return pubsub.NackRequeue
-		}
-
-		return pubsub.Ack
-	}
-}
-
-func handlerSources(db *database.Queries) func(rss.Source) pubsub.AckType {
-	return func(s rss.Source) pubsub.AckType {
-		source, err := db.CreateSource(
-			context.Background(),
-			database.CreateSourceParams{
-				ID:       s.ID,
-				Name:     s.Name,
-				Url:      s.URL,
-				Category: s.Category,
-			})
-		if err != nil {
-			log.Printf("error creating source: %s", err)
-		}
-
-		fmt.Printf(
-			"id: %s\nname: %s\nurl: %s\ncategory: %s\n",
-			source.ID,
-			source.Name,
-			source.Url,
-			source.Category,
-		)
-		return pubsub.Ack
-	}
 }
