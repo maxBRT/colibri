@@ -1,8 +1,8 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <h3 align="center">Colibri API</h3>  
-    <img src="images/colibri_logo.png" alt="Logo" width="80" height="80">
+  <h3 align="center">Colibri RSS</h3>  
+    <img src="images/colibri_logo.png" alt="Logo" width="400" height="400">
 </div>
 
 <!-- ABOUT THE PROJECT -->
