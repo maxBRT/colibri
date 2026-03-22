@@ -10,4 +10,5 @@ RUN mkdir -p /app/config
 
 FROM alpine:latest
 COPY --from=build /consumer /consumer
+COPY ./config/prompts/description_agent_prompt.md /app/config/description_agent_prompt.md
 CMD ["/consumer"]

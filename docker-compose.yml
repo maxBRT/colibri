@@ -29,9 +29,8 @@ services:
   consumer:
     build:
       context: .
-      dockerfile: Dockerfile.consumer
-    volumes:
-      - ./description_agent_prompt.md:/app/config/description_agent_prompt.md
+      dockerfile: cmd/consumer/Dockerfile
+    image: colibri-consumer:latest
     environment:
       AMQP_URL: "amqp://guest:guest@rabbitmq:5672/"
       DB_DRIVER: "postgres"
@@ -52,7 +51,8 @@ services:
       - "8080:8080"
     build:
       context: .
-      dockerfile: Dockerfile.api
+      dockerfile: cmd/api/Dockerfile
+    image: colibri-api:latest
     environment:
       DB_DRIVER: "postgres"
       DB_STRING: "postgresql://postgres:postgres@postgres:5432/colibri_db?sslmode=disable"
@@ -61,6 +61,21 @@ services:
         condition: service_healthy
     restart: on-failure
 
+  fetcher:
+    build:
+      context: .
+      dockerfile: cmd/fetcher/Dockerfile
+    image: colibri-fetcher:latest
+    environment:
+      AMQP_URL: "amqp://guest:guest@rabbitmq:5672/"
+    depends_on:
+      consumer:
+        condition: service_healthy
+    deploy:
+      restart_policy:
+        condition: any
+        delay: 4h
+    
 volumes:
   pgdata:
 

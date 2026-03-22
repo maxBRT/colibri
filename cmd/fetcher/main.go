@@ -33,7 +33,7 @@ func main() {
 	}
 	defer ch.Close()
 
-	sources, err := s.ReadSources("./sources/sources.csv")
+	sources, err := s.ReadSources("app/sources/sources.csv")
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
