@@ -78,7 +78,7 @@ Don't forget to give the project a star! Thanks again!
 ### Top contributors:
 
 <a href="https://github.com/maxbrt/colibri/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=othneildrew/Best-README-Template" alt="contrib.rocks image" />
+  <img src="https://contrib.rocks/image?repo=maxbrt/colibri" alt="contrib.rocks image" />
 </a>
 
 <!-- LICENSE -->
