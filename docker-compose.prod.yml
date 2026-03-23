@@ -22,13 +22,11 @@ services:
 
   rabbitmq:
     image: rabbitmq:4-management-alpine
+    configs:
+      - source: rabbit_config
+        target: /etc/rabbitmq/rabbitmq.conf
     environment:
-      - RABBITMQ_DEFAULT_USER_FILE=/run/secrets/rabbitmq-user
-      - RABBITMQ_DEFAULT_PASS_FILE=/run/secrets/rabbitmq-password
       - RABBITMQ_DEFAULT_VHOST=colibri-vhost
-    secrets:
-      - rabbitmq-user
-      - rabbitmq-password
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -119,9 +117,10 @@ secrets:
     external: true
   google-api-key:
     external: true
-  rabbitmq-user:
-    external: true
-  rabbitmq-password:
-    external: true
   rabbitmq-url:
     external: true
+
+configs:
+  rabbit_config:
+    external: true
+    name: rabbitmq_v1
