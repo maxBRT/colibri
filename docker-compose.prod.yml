@@ -16,9 +16,19 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    deploy:
+      update_config:
+        order: start-first
 
   rabbitmq:
     image: rabbitmq:4-management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER_FILE=/run/secrets/rabbitmq-user
+      - RABBITMQ_DEFAULT_PASS_FILE=/run/secrets/rabbitmq-password
+      - RABBITMQ_DEFAULT_VHOST=colibri-vhost
+    secrets:
+      - rabbitmq-user
+      - rabbitmq-password
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -27,6 +37,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      update_config:
+        order: start-first
 
   migrate:
     build:
@@ -59,6 +72,8 @@ services:
       - postgres
     restart: on-failure
     deploy:
+      update_config:
+        order: start-first
       replicas: 4
 
   api:
@@ -70,12 +85,15 @@ services:
     image: maximebourret/colibri-api:latest
     environment:
       DB_DRIVER: "postgres"
-      DB_STRING_FILE: /run/secrets/db-string
+      DB_STRING: db-string
     secrets:
       - db-string
     depends_on:
       - postgres
     restart: on-failure
+    deploy:
+      update_config:
+        order: start-first
 
   fetcher:
     build:
@@ -83,9 +101,7 @@ services:
       dockerfile: cmd/fetcher/Dockerfile
     image: maximebourret/colibri-fetcher:latest
     environment:
-      AMQP_URL_FILE: /run/secrets/rabbitmq-url
-    secrets:
-      - rabbitmq-url
+      AMQP_URL: "amqp://guest:guest@rabbitmq:5672/"
     depends_on:
       - consumer
     deploy:
@@ -98,10 +114,14 @@ volumes:
 
 secrets:
   db-password:
-    file: ./secrets/db-password.txt
+    external: true
   db-string:
-    file: ./secrets/db-string.txt
+    external: true
   google-api-key:
-    file: ./secrets/google-api-key.txt
+    external: true
+  rabbitmq-user:
+    external: true
+  rabbitmq-password:
+    external: true
   rabbitmq-url:
-    file: ./secrets/rabbitmq-url.txt
+    external: true

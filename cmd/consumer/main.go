@@ -12,9 +12,9 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 	"www.github.com/maxbrt/colibri/internal/database"
 	p "www.github.com/maxbrt/colibri/internal/posts"
-	"www.github.com/maxbrt/colibri/internal/pubsub"
 	ps "www.github.com/maxbrt/colibri/internal/pubsub"
 	s "www.github.com/maxbrt/colibri/internal/sources"
+	"www.github.com/maxbrt/colibri/internal/utils"
 )
 
 func main() {
@@ -22,7 +22,11 @@ func main() {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	driver := os.Getenv("DB_DRIVER")
-	dbString := os.Getenv("DB_STRING")
+	dbString, err := utils.GetSecret(os.Getenv("DB_STRING_FILE"))
+	if err != nil {
+		log.Printf("error loading secret: %s", err)
+		os.Exit(1)
+	}
 
 	dbConn, err := sql.Open(driver, dbString)
 	if err != nil {
@@ -40,7 +44,7 @@ func main() {
 	}
 	defer conn.Close()
 
-	err = pubsub.SubscribeJSON(
+	err = ps.SubscribeJSON(
 		conn,
 		ps.ColibriExchange,
 		ps.ColibriPostsQueue,
@@ -52,7 +56,7 @@ func main() {
 		log.Printf("%s", err)
 	}
 
-	err = pubsub.SubscribeJSON(
+	err = ps.SubscribeJSON(
 		conn,
 		ps.ColibriExchange,
 		ps.ColibriSourcesQueue,

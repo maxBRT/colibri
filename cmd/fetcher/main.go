@@ -1,14 +1,12 @@
 package main
 
 import (
+	"embed"
 	"log"
 	"os"
 	"sync"
 
-	"embed"
-
 	amqp "github.com/rabbitmq/amqp091-go"
-	"www.github.com/maxbrt/colibri/internal/pubsub"
 	ps "www.github.com/maxbrt/colibri/internal/pubsub"
 	"www.github.com/maxbrt/colibri/internal/rss"
 	s "www.github.com/maxbrt/colibri/internal/sources"
@@ -66,7 +64,7 @@ func main() {
 				os.Exit(1)
 			}
 			for _, post := range posts {
-				if err := pubsub.PublishJSON(
+				if err := ps.PublishJSON(
 					ch,
 					ps.ColibriExchange,
 					ps.ColibriPostsKey,

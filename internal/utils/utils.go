@@ -2,12 +2,11 @@ package utils
 
 import (
 	"os"
-	"path"
 	"strings"
 )
 
 func GetSecret(name string) (string, error) {
-	s, err := os.ReadFile(path.Join("/run/secrets/", name))
+	s, err := os.ReadFile(name)
 	if err != nil {
 		return "", err
 	}

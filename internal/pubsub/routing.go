@@ -1,6 +1,10 @@
 package pubsub
 
-import "os"
+import (
+	"os"
+
+	"www.github.com/maxbrt/colibri/internal/utils"
+)
 
 const (
 	ColibriExchange     = "colibri_topic"
@@ -13,7 +17,8 @@ const (
 var ConnectionString = getConnectionString()
 
 func getConnectionString() string {
-	if v := os.Getenv("AMQP_URL"); v != "" {
+	v, _ := utils.GetSecret(os.Getenv("AMQP_URL_FILE"))
+	if v != "" {
 		return v
 	}
 	return "amqp://guest:guest@localhost:5672/"

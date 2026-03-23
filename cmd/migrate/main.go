@@ -7,6 +7,7 @@ import (
 	"os"
 
 	_ "github.com/lib/pq"
+	"www.github.com/maxbrt/colibri/internal/utils"
 	schema "www.github.com/maxbrt/colibri/sql"
 
 	"github.com/pressly/goose/v3"
@@ -14,7 +15,11 @@ import (
 
 func main() {
 	driver := os.Getenv("DB_DRIVER")
-	dbString := os.Getenv("DB_STRING")
+	dbString, err := utils.GetSecret(os.Getenv("DB_STRING_FILE"))
+	if err != nil {
+		log.Printf("error loading secret: %s", err)
+		os.Exit(1)
+	}
 	goose.SetBaseFS(schema.MigrationFiles)
 
 	db, err := sql.Open(driver, dbString)
