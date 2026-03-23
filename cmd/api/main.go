@@ -32,8 +32,8 @@ func main() {
 	s := server.NewServer()
 	s.MountHandlers(db)
 
-	fmt.Println("Listening on port 80")
-	if err := http.ListenAndServe(":80", s.Router); err != nil {
+	fmt.Println("Listening on port 8080")
+	if err := http.ListenAndServe(":8080", s.Router); err != nil {
 		log.Printf("%s", err)
 		os.Exit(1)
 	}
