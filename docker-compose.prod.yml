@@ -85,7 +85,7 @@ services:
     image: maximebourret/colibri-api:latest
     environment:
       DB_DRIVER: "postgres"
-      DB_STRING: db-string
+      DB_STRING_FILE: /run/secrets/db-string
     secrets:
       - db-string
     depends_on:
@@ -101,7 +101,7 @@ services:
       dockerfile: cmd/fetcher/Dockerfile
     image: maximebourret/colibri-fetcher:latest
     environment:
-      AMQP_URL: "amqp://guest:guest@rabbitmq:5672/"
+      AMQP_URL_FILE: /run/secrets/rabbitmq-url
     depends_on:
       - consumer
     deploy:
