@@ -48,7 +48,7 @@ func TestValidateSource(t *testing.T) {
 		{
 			name: "Valid source",
 			source: Source{
-				ID:       "hacker news",
+				ID:       "hacker-news",
 				Name:     "Hacker News",
 				URL:      "https://news.ycombinator.com/rss",
 				Category: "Technology",
