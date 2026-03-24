@@ -24,6 +24,19 @@ func NewServer() *Server {
 	return s
 }
 
+func (s *Server) ListenAndServe(addr string) error {
+	srv := &http.Server{
+		Addr:              addr,
+		Handler:           s.Router,
+		ReadTimeout:       5 * time.Second,
+		ReadHeaderTimeout: 2 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       120 * time.Second,
+	}
+
+	return srv.ListenAndServe()
+}
+
 func (s *Server) MountHandlers(db *database.Queries) {
 	s.Router.Use(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"*"},

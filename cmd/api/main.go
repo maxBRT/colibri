@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -13,7 +12,7 @@ import (
 	"www.github.com/maxbrt/colibri/internal/utils"
 )
 
-func main(){
+func main() {
 	driver := os.Getenv("DB_DRIVER")
 	dbString, err := utils.GetSecret(os.Getenv("DB_STRING_FILE"))
 	if err != nil {
@@ -33,7 +32,7 @@ func main(){
 	s.MountHandlers(db)
 
 	fmt.Println("Listening on port 8080")
-	if err := http.ListenAndServe(":8080", s.Router); err != nil {
+	if err := s.ListenAndServe(":8080"); err != nil {
 		log.Printf("%s", err)
 		os.Exit(1)
 	}

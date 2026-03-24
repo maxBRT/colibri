@@ -46,5 +46,9 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(200)
-	w.Write(c)
+	_, err = w.Write(c)
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
 }

@@ -44,12 +44,16 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	c, err := json.Marshal(posts)
+	data, err := json.Marshal(posts)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(200)
-	w.Write(c)
+	_, err = w.Write(data)
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
 }

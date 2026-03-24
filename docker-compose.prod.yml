@@ -110,10 +110,13 @@ services:
       AMQP_URL_FILE: /run/secrets/rabbitmq-url
     depends_on:
       - consumer
+      - rabbitmq
     deploy:
       restart_policy:
         condition: any
         delay: 4h
+
+      
   certbot:
     image: certbot/certbot
     volumes:
