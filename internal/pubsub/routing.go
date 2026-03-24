@@ -1,6 +1,7 @@
 package pubsub
 
 import (
+	"log"
 	"os"
 
 	"www.github.com/maxbrt/colibri/internal/utils"
@@ -17,9 +18,14 @@ const (
 var ConnectionString = getConnectionString()
 
 func getConnectionString() string {
-	v, _ := utils.GetSecret(os.Getenv("AMQP_URL_FILE"))
-	if v != "" {
-		return v
+	secretFile := os.Getenv("AMQP_URL_FILE")
+	if secretFile == "" {
+		log.Println("AMQP_URL_FILE not set, using default localhost connection")
+		return "amqp://guest:guest@localhost:5672/"
 	}
-	return "amqp://guest:guest@localhost:5672/"
+	v, err := utils.GetSecret(secretFile)
+	if err != nil {
+		log.Fatalf("Failed to read AMQP secret from %s: %s", secretFile, err)
+	}
+	return v
 }

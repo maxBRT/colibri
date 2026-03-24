@@ -50,9 +50,6 @@ services:
         order: start-first
 
   migrate:
-    build:
-      context: .
-      dockerfile: cmd/migrate/Dockerfile
     image: maximebourret/colibri-migrate:latest
     environment:
       DB_DRIVER: "postgres"
@@ -63,9 +60,6 @@ services:
       - postgres
 
   consumer:
-    build:
-      context: .
-      dockerfile: cmd/consumer/Dockerfile
     image: maximebourret/colibri-consumer:latest
     environment:
       AMQP_URL_FILE: /run/secrets/rabbitmq-url
@@ -85,9 +79,6 @@ services:
       replicas: 4
 
   api:
-    build:
-      context: .
-      dockerfile: cmd/api/Dockerfile
     image: maximebourret/colibri-api:latest
     environment:
       DB_DRIVER: "postgres"
@@ -102,12 +93,11 @@ services:
         order: start-first
 
   fetcher:
-    build:
-      context: .
-      dockerfile: cmd/fetcher/Dockerfile
     image: maximebourret/colibri-fetcher:latest
     environment:
       AMQP_URL_FILE: /run/secrets/rabbitmq-url
+    secrets:
+      - rabbitmq-url
     depends_on:
       - consumer
       - rabbitmq
@@ -116,7 +106,6 @@ services:
         condition: any
         delay: 4h
 
-      
   certbot:
     image: certbot/certbot
     volumes:

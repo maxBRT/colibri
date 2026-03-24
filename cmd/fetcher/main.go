@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	ps "www.github.com/maxbrt/colibri/internal/pubsub"
@@ -16,10 +17,18 @@ import (
 var SourcesFile embed.FS
 
 func main() {
-	conn, err := amqp.Dial(ps.ConnectionString)
+	var conn *amqp.Connection
+	var err error
+	for i := range 10 {
+		conn, err = amqp.Dial(ps.ConnectionString)
+		if err == nil {
+			break
+		}
+		log.Printf("Failed to connect to RabbitMQ (attempt %d/10): %s", i+1, err)
+		time.Sleep(3 * time.Second)
+	}
 	if err != nil {
-		log.Printf("%s", err)
-		os.Exit(1)
+		log.Fatalf("Could not connect to RabbitMQ after 10 attempts: %s", err)
 	}
 	defer conn.Close()
 
