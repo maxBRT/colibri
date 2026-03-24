@@ -27,7 +27,7 @@ jobs:
       - name: Deploy
         uses: kitconcept/docker-stack-deploy@v1.0.1
         with:
-          registery: "" 
+          registry: "docker.io" 
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           remote_host: ${{ secrets.REMOTE_HOST }}
