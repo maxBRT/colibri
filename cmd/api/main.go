@@ -13,7 +13,7 @@ import (
 	"www.github.com/maxbrt/colibri/internal/utils"
 )
 
-func main(){
+func main() {
 	driver := os.Getenv("DB_DRIVER")
 	dbString, err := utils.GetSecret(os.Getenv("DB_STRING_FILE"))
 	if err != nil {
