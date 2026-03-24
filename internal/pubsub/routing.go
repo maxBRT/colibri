@@ -25,7 +25,7 @@ func getConnectionString() string {
 	}
 	v, err := utils.GetSecret(secretFile)
 	if err != nil {
-		log.Fatalf("Failed to read AMQP secret from %s: %s", secretFile, err)
+		log.Fatalf("Failed to read AMQP secret %s", err)
 	}
 	return v
 }
