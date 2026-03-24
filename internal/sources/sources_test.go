@@ -15,7 +15,7 @@ func TestReadSources(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sources, err := ReadSources(os.DirFS(tmpDir), csvPath)
+	sources, err := ReadSources(os.DirFS(tmpDir), "sources.csv")
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -48,7 +48,7 @@ func TestValidateSource(t *testing.T) {
 		{
 			name: "Valid source",
 			source: Source{
-				ID:       "hacker-news",
+				ID:       "hacker news",
 				Name:     "Hacker News",
 				URL:      "https://news.ycombinator.com/rss",
 				Category: "Technology",
