@@ -25,31 +25,57 @@ How ?:
 
 ### Prerequisites
 
+- [Go](https://go.dev/dl/) 1.26+
 - [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/)
 - A Google API key (for the AI description agent)
 
-### Installation
+### Local Development Setup
 
 1. Clone the repo
    ```sh
    git clone https://github.com/maxbrt/colibri.git
    cd colibri
    ```
-2. Create a `google_api_key.txt` file at the project root with your Google API key
+
+2. Create the secrets files
    ```sh
-   echo "your-api-key" > google_api_key.txt
+   mkdir -p secrets
+   echo "your-db-password"                                          > secrets/db-password.txt
+   echo "postgres://postgres:your-db-password@postgres:5432/colibri_db" > secrets/db-string.txt
+   echo "amqp://guest:guest@rabbitmq:5672/"                         > secrets/rabbitmq-url.txt
+   echo "your-google-api-key"                                       > secrets/google-api-key.txt
    ```
+   > Replace `your-db-password` (in both files) and `your-google-api-key` with real values.
+
 3. Start all services
    ```sh
    docker compose up --build
    ```
+   This starts PostgreSQL, RabbitMQ, runs database migrations, and launches the API, consumer, and fetcher.
 
-4. Run the fetcher
-   ```sh
-   go run cmd/fetcher/main.go
-   ```
+| Service       | URL                        |
+|---------------|----------------------------|
+| API           | http://localhost:80        |
+| RabbitMQ UI   | http://localhost:15672     |
+| PostgreSQL    | localhost:5432             |
 
-The API will be available at `http://localhost:8080` and the RabbitMQ management UI at `http://localhost:15672`.
+### Running Tests & Linters
+
+```sh
+# Unit tests
+go test ./...
+
+# Code formatting check
+test -z $(go fmt ./...)
+
+# Static analysis
+go install honnef.co/go/tools/cmd/staticcheck@latest
+staticcheck ./...
+
+# Security scan
+go install github.com/securego/gosec/v2/cmd/gosec@latest
+gosec ./...
+```
 
 <!-- USAGE EXAMPLES -->
 ## Usage
