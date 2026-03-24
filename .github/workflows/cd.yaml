@@ -24,14 +24,20 @@ jobs:
           docker compose build
           docker compose push
 
-      - name: Deploy
-        uses: kitconcept/docker-stack-deploy@v1.0.1
+      - name: Copy config to VPS
+        uses: appleboy/scp-action@v0.1.7
         with:
-          registry: "docker.io" 
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-          remote_host: ${{ secrets.REMOTE_HOST }}
-          remote_user: ${{ secrets.REMOTE_USER }}
-          remote_private_key: ${{ secrets.REMOTE_PRIVATE_KEY }}
-          stack_file: "docker-compose.prod.yml"
-          stack_name: "colibri"
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.REMOTE_PRIVATE_KEY }}
+          source: "docker-compose.prod.yml"
+          target: "/home/max/"
+
+      - name: Execute Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: "max"
+          key: ${{ secrets.REMOTE_PRIVATE_KEY }}
+          script: |
+            docker stack deploy -c /home/max/docker-compose.prod.yml colibri
