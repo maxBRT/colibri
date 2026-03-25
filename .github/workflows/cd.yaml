@@ -24,20 +24,19 @@ jobs:
           docker compose build
           docker compose push
 
-      - name: Copy config to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.REMOTE_HOST }}
-          username: ${{ secrets.REMOTE_USER }}
-          key: ${{ secrets.REMOTE_PRIVATE_KEY }}
-          source: "docker-compose.prod.yml"
-          target: "/home/max/"
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.REMOTE_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Execute Deploy
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.REMOTE_HOST }}
-          username: "max"
-          key: ${{ secrets.REMOTE_PRIVATE_KEY }}
-          script: |
-            docker stack deploy -c /home/max/docker-compose.prod.yml colibri
+      - name: Create Docker Context
+        run: |
+          docker context create colibri \
+            --docker "host=ssh://max@${{ secrets.REMOTE_HOST }}"
+
+      - name: Deploy Stack
+        run: |
+          docker --context colibri stack deploy \
+            -c docker-compose.prod.yml colibri
