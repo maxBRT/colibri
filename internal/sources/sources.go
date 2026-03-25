@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"log"
 
+	"www.github.com/maxbrt/colibri/internal/database"
 	"www.github.com/maxbrt/colibri/internal/utils"
 )
 
@@ -14,6 +15,15 @@ type Source struct {
 	Name     string `json:"name"`
 	URL      string `json:"url"`
 	Category string `json:"category"`
+}
+
+func SourceFromModel(s database.Source) *Source {
+	return &Source{
+		ID:       s.ID,
+		Name:     s.Name,
+		URL:      s.Url,
+		Category: s.Category,
+	}
 }
 
 func ReadSources(f fs.FS, filePath string) ([]Source, error) {

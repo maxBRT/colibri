@@ -3,6 +3,8 @@ package posts
 import (
 	"fmt"
 	"time"
+
+	"www.github.com/maxbrt/colibri/internal/database"
 )
 
 type Post struct {
@@ -12,6 +14,17 @@ type Post struct {
 	PubDate     time.Time `json:"pubDate"`
 	GUID        string    `json:"guid"`
 	SourceID    string    `json:"sourceId"`
+}
+
+func PostFromModel(p database.Post) *Post {
+	return &Post{
+		Title:       p.Title,
+		Link:        p.Link,
+		Description: p.Description.String,
+		PubDate:     p.PubDate,
+		GUID:        p.Guid,
+		SourceID:    p.SourceID,
+	}
 }
 
 func NewPost(
