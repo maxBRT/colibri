@@ -18,25 +18,29 @@ func NewHandler(db *database.Queries) *Handler {
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	categories := r.URL.Query()["category"]
-	var sources []database.Source
+	var sources []*Source
 
 	if len(categories) > 0 {
 		for i, c := range categories {
 			categories[i] = strings.ToLower(c)
 		}
-		s, err := h.db.ListSourcesByCategory(r.Context(), categories)
+		dbSources, err := h.db.ListSourcesByCategory(r.Context(), categories)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		sources = s
+		for _, s := range dbSources {
+			sources = append(sources, SourceFromModel(s))
+		}
 	} else {
-		s, err := h.db.ListSources(r.Context())
+		dbSources, err := h.db.ListSources(r.Context())
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		sources = s
+		for _, s := range dbSources {
+			sources = append(sources, SourceFromModel(s))
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")

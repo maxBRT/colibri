@@ -20,27 +20,30 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
 	sourceIDs := q["sources"]
-	var posts []database.Post
+	var posts []*Post
 
 	if len(sourceIDs) > 0 {
 		for i, s := range sourceIDs {
 			sourceIDs[i] = strings.ToLower(s)
 		}
 
-		p, err := h.db.ListPostsForSource(r.Context(), sourceIDs)
+		dbPosts, err := h.db.ListPostsForSource(r.Context(), sourceIDs)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-
-		posts = p
+		for _, p := range dbPosts {
+			posts = append(posts, PostFromModel(p))
+		}
 	} else {
-		p, err := h.db.ListPosts(r.Context())
+		dbPosts, err := h.db.ListPosts(r.Context())
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		posts = p
+		for _, p := range dbPosts {
+			posts = append(posts, PostFromModel(p))
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")

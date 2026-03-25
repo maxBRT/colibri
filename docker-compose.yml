@@ -63,7 +63,7 @@ services:
 
   api:
     ports:
-      - "80:80"
+      - "8080:8080"
     build:
       context: .
       dockerfile: cmd/api/Dockerfile
