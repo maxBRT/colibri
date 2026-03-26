@@ -92,7 +92,14 @@ services:
       restart_policy:
         condition: any
         delay: 4h
-
+  
+  docs:
+    build:
+      context: ./docs
+    image: maximebourret/colibri-docs:latest
+    ports:
+      - "8181:80"
+    
 volumes:
   pgdata:
 
