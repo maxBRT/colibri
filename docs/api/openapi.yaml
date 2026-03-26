@@ -1,0 +1,171 @@
+openapi: 3.1.0
+info:
+  title: Colibri RSS API
+  version: "1.0.0"
+  description: |
+    REST API for the Colibri RSS aggregator. Fetch RSS sources, the posts they
+    produce, and the categories each source belongs to. Feeds are refreshed
+    automatically every four hours and enriched with AI generated summaries.
+  license:
+    name: MIT License
+    identifier: MIT
+servers:
+  - url: https://api.colibri-rss.com/
+    description: Local development server
+tags:
+  - name: Categories
+    description: Unique list of all source categories.
+  - name: Sources
+    description: Registered RSS feeds available to Colibri.
+  - name: Posts
+    description: Aggregated posts fetched from every registered source.
+paths:
+  /v1/categories:
+    get:
+      tags: [Categories]
+      summary: List categories
+      description: Returns the distinct set of categories inferred from all configured sources.
+      responses:
+        "200":
+          description: Array of unique category slugs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryList'
+        "500":
+          $ref: '#/components/responses/InternalError'
+  /v1/sources:
+    get:
+      tags: [Sources]
+      summary: List sources
+      description: Fetch every registered RSS source with optional category filtering.
+      parameters:
+        - $ref: '#/components/parameters/CategoryFilter'
+      responses:
+        "200":
+          description: Matching RSS sources.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Source'
+        "500":
+          $ref: '#/components/responses/InternalError'
+  /v1/posts:
+    get:
+      tags: [Posts]
+      summary: List posts
+      description: Retrieve posts from every source or constrain the results to a subset of source IDs.
+      parameters:
+        - $ref: '#/components/parameters/SourceFilter'
+      responses:
+        "200":
+          description: Pageless collection of posts ordered by publication time.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        "500":
+          $ref: '#/components/responses/InternalError'
+components:
+  parameters:
+    CategoryFilter:
+      name: category
+      in: query
+      description: Case-insensitive category identifier. Repeat to match multiple categories.
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+      style: form
+      explode: true
+    SourceFilter:
+      name: sources
+      in: query
+      description: Source IDs to filter by. Repeat to combine multiple IDs.
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+      style: form
+      explode: true
+  responses:
+    InternalError:
+      description: Unexpected server-side error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    CategoryList:
+      type: array
+      description: Distinct source categories stored in the database.
+      items:
+        type: string
+      example:
+        - engineering
+        - design
+        - investing
+    Source:
+      type: object
+      required: [id, name, url, category]
+      properties:
+        id:
+          type: string
+          description: Stable slug used to reference the source internally.
+          example: hacker-news
+        name:
+          type: string
+          description: Human-readable title of the source feed.
+          example: Hacker News Front Page
+        url:
+          type: string
+          format: uri
+          description: RSS or Atom feed URL.
+          example: https://hnrss.org/frontpage
+        category:
+          type: string
+          description: Category slug the source belongs to.
+          example: engineering
+    Post:
+      type: object
+      required: [title, link, pubDate, guid, sourceId]
+      properties:
+        title:
+          type: string
+          description: Title published by the feed provider.
+          example: Introduction to Chi Router Middleware
+        link:
+          type: string
+          format: uri
+          description: Canonical URL of the article.
+          example: https://example.com/blog/chi-router
+        description:
+          type: string
+          nullable: true
+          description: AI-generated summary of the article.
+          example: Learn how Colibri wires Chi middleware to protect RSS ingestion endpoints.
+        pubDate:
+          type: string
+          format: date-time
+          description: Original publication timestamp of the article.
+          example: 2026-03-20T09:00:00Z
+        guid:
+          type: string
+          description: Unique identifier derived from the feed entry GUID or the item URL.
+          example: https://example.com/blog/chi-router.guid
+        sourceId:
+          type: string
+          description: ID of the source this post belongs to.
+          example: hacker-news
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Internal server error
