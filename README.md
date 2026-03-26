@@ -4,8 +4,6 @@
     <img src="images/colibri_logo.png" alt="Logo" width="400" height="400">
 </div>
 
-![test](https://github.com/maxbrt/colibri/actions/workflows/ci.yaml/badge.svg)
-
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
