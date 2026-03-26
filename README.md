@@ -16,69 +16,14 @@ How ?:
 * We generate incosistant field like description with AI agents
 * We expose everything through a versionned REST API so your apps don't break
 
+Make sure to check out the [docs](https://colibri-rss.com) !
+
 ### Built With
 
 - [chi](https://github.com/go-chi/chi)
 - [sqlc](https://github.com/sqlc-dev/sqlc)
 - [go-feed](https://github.com/mmcdole/gofeed)
 - [adk-go](https://github.com/google/adk-go)
-
-### Prerequisites
-
-- [Go](https://go.dev/dl/) 1.26+
-- [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/)
-- A Google API key (for the AI description agent)
-
-### Local Development Setup
-
-1. Clone the repo
-   ```sh
-   git clone https://github.com/maxbrt/colibri.git
-   cd colibri
-   ```
-
-2. Create the secrets files
-   ```sh
-   mkdir -p secrets
-   echo "your-db-password"                                          > secrets/db-password.txt
-   echo "postgres://postgres:your-db-password@postgres:5432/colibri_db" > secrets/db-string.txt
-   echo "amqp://guest:guest@rabbitmq:5672/"                         > secrets/rabbitmq-url.txt
-   echo "your-google-api-key"                                       > secrets/google-api-key.txt
-   ```
-   > Replace `your-db-password` (in both files) and `your-google-api-key` with real values.
-
-3. Start all services
-   ```sh
-   docker compose up --build
-   ```
-   This starts PostgreSQL, RabbitMQ, runs database migrations, and launches the API, consumer, and fetcher.
-
-| Service       | URL                        |
-|---------------|----------------------------|
-| API           | http://localhost:80        |
-| RabbitMQ UI   | http://localhost:15672     |
-| PostgreSQL    | localhost:5432             |
-
-### Running Tests & Linters
-
-```sh
-# Unit tests
-go test ./...
-
-# Code formatting check
-test -z $(go fmt ./...)
-
-# Static analysis
-go install honnef.co/go/tools/cmd/staticcheck@latest
-staticcheck ./...
-
-# Security scan
-go install github.com/securego/gosec/v2/cmd/gosec@latest
-gosec ./...
-```
-
-<!-- USAGE EXAMPLES -->
-## Usage
 
 <!-- ROADMAP -->
 ## Roadmap
