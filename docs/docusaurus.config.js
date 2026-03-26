@@ -4,8 +4,8 @@
 // There are various equivalent ways to declare your Docusaurus config.
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
-import {themes as prismThemes} from 'prism-react-renderer';
-import {createRequire} from 'module';
+import { themes as prismThemes } from 'prism-react-renderer';
+import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
 
@@ -137,7 +137,7 @@ const config = {
             label: 'Contribute',
             position: 'left',
           },
-          {to: '/blog', label: 'Blog', position: 'left'},
+          { to: '/blog', label: 'Blog', position: 'left' },
           {
             href: 'https://github.com/maxbrt/colibri',
             label: 'GitHub',
@@ -179,7 +179,7 @@ const config = {
               },
               {
                 label: 'Status',
-                href: 'https://github.com/maxbrt/colibri/actions',
+                href: 'https://stats.uptimerobot.com/dTBMJlyqJT',
               },
               {
                 label: 'GitHub',
