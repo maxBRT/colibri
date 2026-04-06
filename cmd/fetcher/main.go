@@ -55,10 +55,21 @@ func main() {
 	for _, source := range sources {
 		wg.Add(1)
 
+		// Send the source to be saved in the db
 		if err := ps.PublishJSON(
 			ch,
 			ps.ColibriExchange,
 			ps.ColibriSourcesKey,
+			source); err != nil {
+			log.Printf("%s", err)
+			os.Exit(1)
+		}
+
+		// Send the full source to the consumer for logo fetching
+		if err := ps.PublishJSON(
+			ch,
+			ps.ColibriExchange,
+			ps.ColibriLogoKey,
 			source); err != nil {
 			log.Printf("%s", err)
 			os.Exit(1)

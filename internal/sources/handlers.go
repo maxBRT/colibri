@@ -24,22 +24,22 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		for i, c := range categories {
 			categories[i] = strings.ToLower(c)
 		}
-		dbSources, err := h.db.ListSourcesByCategory(r.Context(), categories)
+		rows, err := h.db.ListSourcesByCategoryWithLogo(r.Context(), categories)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		for _, s := range dbSources {
-			sources = append(sources, SourceFromModel(s))
+		for _, row := range rows {
+			sources = append(sources, SourceFromWithLogoRow(row.ID, row.Name, row.Url, row.Category, row.LogoUrl))
 		}
 	} else {
-		dbSources, err := h.db.ListSources(r.Context())
+		rows, err := h.db.ListSourcesWithLogo(r.Context())
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		for _, s := range dbSources {
-			sources = append(sources, SourceFromModel(s))
+		for _, row := range rows {
+			sources = append(sources, SourceFromWithLogoRow(row.ID, row.Name, row.Url, row.Category, row.LogoUrl))
 		}
 	}
 

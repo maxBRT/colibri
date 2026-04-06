@@ -1,6 +1,7 @@
 package sources
 
 import (
+	"database/sql"
 	"encoding/csv"
 	"fmt"
 	"io/fs"
@@ -15,6 +16,7 @@ type Source struct {
 	Name     string `json:"name"`
 	URL      string `json:"url"`
 	Category string `json:"category"`
+	LogoURL  string `json:"logo_url,omitempty"`
 }
 
 func SourceFromModel(s database.Source) *Source {
@@ -23,6 +25,20 @@ func SourceFromModel(s database.Source) *Source {
 		Name:     s.Name,
 		URL:      s.Url,
 		Category: s.Category,
+	}
+}
+
+func SourceFromWithLogoRow(id, name, url, category string, logoURL sql.NullString) *Source {
+	val := ""
+	if logoURL.Valid {
+		val = logoURL.String
+	}
+	return &Source{
+		ID:       id,
+		Name:     name,
+		URL:      url,
+		Category: category,
+		LogoURL:  val,
 	}
 }
 

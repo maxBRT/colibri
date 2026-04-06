@@ -50,10 +50,18 @@ services:
       AMQP_URL_FILE: /run/secrets/rabbitmq-url
       DB_DRIVER: "postgres"
       DB_STRING_FILE: /run/secrets/db-string
+      LOGO_S3_BUCKET_FILE: /run/secrets/logo-s3-bucket
+      LOGO_S3_REGION_FILE: /run/secrets/logo-s3-region
+      AWS_ACCESS_KEY_ID_FILE: /run/secrets/aws-access-key
+      AWS_SECRET_ACCESS_KEY_FILE: /run/secrets/aws-secret-access-key
     secrets:
       - rabbitmq-url
       - db-string
       - google-api-key
+      - aws-access-key
+      - aws-secret-access-key
+      - logo-s3-bucket
+      - logo-s3-region
     depends_on:
       - rabbitmq
       - postgres
@@ -88,18 +96,15 @@ services:
       - rabbitmq-url
     depends_on:
       - consumer
-    deploy:
-      restart_policy:
-        condition: any
-        delay: 4h
-  
+      - rabbitmq
+
   docs:
     build:
       context: ./docs
     image: maximebourret/colibri-docs:latest
     ports:
       - "8181:80"
-    
+
 volumes:
   pgdata:
 
@@ -112,3 +117,11 @@ secrets:
     file: ./secrets/google-api-key.txt
   rabbitmq-url:
     file: ./secrets/rabbitmq-url.txt
+  aws-access-key:
+    file: ./secrets/aws-access-key.txt
+  aws-secret-access-key:
+    file: ./secrets/aws-secret-access-key.txt
+  logo-s3-bucket:
+    file: ./secrets/logo-s3-bucket.txt
+  logo-s3-region:
+    file: ./secrets/logo-s3-region.txt
