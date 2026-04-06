@@ -132,6 +132,11 @@ components:
           type: string
           description: Category slug the source belongs to.
           example: engineering
+        logo_url:
+          type: string
+          format: uri
+          description: Optional logo image URL for the source.
+          example: https://cdn.example.com/logos/hacker-news.png
     Post:
       type: object
       required: [title, link, pubDate, guid, sourceId]
@@ -147,7 +152,6 @@ components:
           example: https://example.com/blog/chi-router
         description:
           type: string
-          nullable: true
           description: AI-generated summary of the article.
           example: Learn how Colibri wires Chi middleware to protect RSS ingestion endpoints.
         pubDate:

@@ -55,6 +55,17 @@ func (ns NullPostStatus) Value() (driver.Value, error) {
 	return string(ns.PostStatus), nil
 }
 
+type Logo struct {
+	ID        uuid.UUID
+	SourceID  string
+	ObjectKey string
+	Url       string
+	MimeType  sql.NullString
+	SizeBytes sql.NullInt64
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 type Post struct {
 	ID          uuid.UUID
 	Title       string

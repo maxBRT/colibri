@@ -27,10 +27,21 @@ Make sure to check out the [docs](https://colibri-rss.com) !
 ## Roadmap
 
 - [ ] Grow the list of registered feed
-- [ ] Add logo fetching for every feed
+- [x] Add logo fetching for every feed
 - [ ] Add support for user facing feed registration
 
 See the [open issues](https://github.com/maxbrt/colibri) for a full list of proposed features (and known issues).
+
+## Logo Storage Configuration
+
+Logos are fetched asynchronously and stored on S3 (or any S3-compatible service). The consumer container requires the following environment variables (see `docker-compose.yml` for an example):
+
+```
+LOGO_S3_BUCKET_FILE=/run/secrets/logo-s3-bucket
+LOGO_S3_REGION_FILE=/run/secrets/logo-s3-region
+AWS_ACCESS_KEY_ID_FILE=/run/secrets/aws-access-key
+AWS_SECRET_ACCESS_KEY_FILE=/run/secrets/aws-secret-access-key
+```
 
 <!-- CONTRIBUTING -->
 ## Contributing

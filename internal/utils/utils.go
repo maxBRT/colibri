@@ -3,6 +3,7 @@ package utils
 import (
 	"io"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -28,4 +29,9 @@ func GetSecret(name string) (string, error) {
 	}
 
 	return strings.TrimSpace(string(s)), nil
+}
+
+func ParseBool(val string) bool {
+	b, err := strconv.ParseBool(val)
+	return err == nil && b
 }

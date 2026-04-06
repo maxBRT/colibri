@@ -2,7 +2,6 @@ package sources
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"www.github.com/maxbrt/colibri/internal/database"
@@ -11,7 +10,7 @@ import (
 
 func Listener(db *database.Queries) func(Source) pubsub.AckType {
 	return func(s Source) pubsub.AckType {
-		source, err := db.CreateSource(
+		_, err := db.CreateSource(
 			context.Background(),
 			database.CreateSourceParams{
 				ID:       s.ID,
@@ -21,15 +20,9 @@ func Listener(db *database.Queries) func(Source) pubsub.AckType {
 			})
 		if err != nil {
 			log.Printf("error creating source: %s", err)
+			return pubsub.Ack
 		}
 
-		fmt.Printf(
-			"id: %s\nname: %s\nurl: %s\ncategory: %s\n",
-			source.ID,
-			source.Name,
-			source.Url,
-			source.Category,
-		)
 		return pubsub.Ack
 	}
 }

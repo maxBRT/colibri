@@ -72,6 +72,36 @@ func NewRSSClient() *http.Client {
 	}
 }
 
+func FetchFeedMetadata(source s.Source) (*gofeed.Feed, error) {
+	c := NewRSSClient()
+	req, err := NewRSSFetchRequest(source.URL)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.Do(req)
+	if err != nil {
+		log.Printf("Failed to fetch feed %s | %s", source.ID, err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("bad status: %d", resp.StatusCode)
+	}
+
+	limitReader := io.LimitReader(resp.Body, 5*1024*1024)
+
+	fp := gofeed.NewParser()
+	feed, err := fp.Parse(limitReader)
+	if err != nil {
+		log.Printf("Failed to parse feed %s | %s", source.ID, err)
+		return nil, err
+	}
+
+	return feed, nil
+}
+
 func NewRSSFetchRequest(URL string) (*http.Request, error) {
 	req, err := http.NewRequestWithContext(context.Background(), "GET", URL, nil)
 	if err != nil {

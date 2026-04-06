@@ -7,6 +7,8 @@ package database
 
 import (
 	"context"
+	"database/sql"
+	"time"
 
 	"github.com/lib/pq"
 )
@@ -17,7 +19,12 @@ INSERT INTO sources (
   name,
   url,
   category
-) VALUES ( $1,$2,$3,$4 )
+) VALUES ( 
+  $1,
+  $2,
+  $3,
+  $4 
+)
 ON CONFLICT (id)
 DO UPDATE SET id = EXCLUDED.id 
 RETURNING id, name, url, category, created_at, updated_at
@@ -47,6 +54,37 @@ func (q *Queries) CreateSource(ctx context.Context, arg CreateSourceParams) (Sou
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const deduplicateSources = `-- name: DeduplicateSources :one
+INSERT INTO sources (
+  id,
+  name,
+  url,
+  category
+) 
+VALUES ( $1,$2,$3,$4 ) 
+ON CONFLICT (id) DO NOTHING
+RETURNING id
+`
+
+type DeduplicateSourcesParams struct {
+	ID       string
+	Name     string
+	Url      string
+	Category string
+}
+
+func (q *Queries) DeduplicateSources(ctx context.Context, arg DeduplicateSourcesParams) (string, error) {
+	row := q.db.QueryRowContext(ctx, deduplicateSources,
+		arg.ID,
+		arg.Name,
+		arg.Url,
+		arg.Category,
+	)
+	var id string
+	err := row.Scan(&id)
+	return id, err
 }
 
 const deleteSource = `-- name: DeleteSource :exec
@@ -157,6 +195,115 @@ func (q *Queries) ListSourcesByCategory(ctx context.Context, dollar_1 []string) 
 			&i.Category,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listSourcesByCategoryWithLogo = `-- name: ListSourcesByCategoryWithLogo :many
+SELECT 
+  s.id,
+  s.name,
+  s.url,
+  s.category,
+  s.created_at,
+  s.updated_at,
+  l.url AS logo_url
+FROM sources s
+LEFT JOIN logos l ON l.source_id = s.id
+WHERE LOWER(s.category) = ANY($1::text[])
+`
+
+type ListSourcesByCategoryWithLogoRow struct {
+	ID        string
+	Name      string
+	Url       string
+	Category  string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	LogoUrl   sql.NullString
+}
+
+func (q *Queries) ListSourcesByCategoryWithLogo(ctx context.Context, dollar_1 []string) ([]ListSourcesByCategoryWithLogoRow, error) {
+	rows, err := q.db.QueryContext(ctx, listSourcesByCategoryWithLogo, pq.Array(dollar_1))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListSourcesByCategoryWithLogoRow
+	for rows.Next() {
+		var i ListSourcesByCategoryWithLogoRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Url,
+			&i.Category,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.LogoUrl,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listSourcesWithLogo = `-- name: ListSourcesWithLogo :many
+SELECT 
+  s.id,
+  s.name,
+  s.url,
+  s.category,
+  s.created_at,
+  s.updated_at,
+  l.url AS logo_url
+FROM sources s
+LEFT JOIN logos l ON l.source_id = s.id
+`
+
+type ListSourcesWithLogoRow struct {
+	ID        string
+	Name      string
+	Url       string
+	Category  string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	LogoUrl   sql.NullString
+}
+
+func (q *Queries) ListSourcesWithLogo(ctx context.Context) ([]ListSourcesWithLogoRow, error) {
+	rows, err := q.db.QueryContext(ctx, listSourcesWithLogo)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListSourcesWithLogoRow
+	for rows.Next() {
+		var i ListSourcesWithLogoRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Url,
+			&i.Category,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.LogoUrl,
 		); err != nil {
 			return nil, err
 		}
