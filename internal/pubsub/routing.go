@@ -15,7 +15,7 @@ const (
 	ColibriPostsQueue   = "posts_queue"
 	ColibriSourcesQueue = "sources_queue"
 	ColibriLogoQueue    = "logo_queue"
-	CDNBaseURL          = "d1mc6q6crhpy86.cloudfront.net"
+	CDNBaseURL          = "https://d1mc6q6crhpy86.cloudfront.net"
 )
 
 var ConnectionString = getConnectionString()
