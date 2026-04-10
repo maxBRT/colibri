@@ -125,8 +125,9 @@ services:
     image: maximebourret/colibri-docs:latest
     ports:
       - "8181:80"
-    restart: on-failure
     deploy:
+      restart_policy:
+        condition: any
       update_config:
         order: start-first
 
