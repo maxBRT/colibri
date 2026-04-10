@@ -8,7 +8,7 @@ services:
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
     configs:
-      - source: nginx_conf_v4
+      - source: nginx_conf_v5
         target: /etc/nginx/conf.d/default.conf
 
   postgres:
@@ -158,5 +158,5 @@ configs:
   rabbit_config:
     external: true
     name: rabbitmq_v1
-  nginx_conf_v4:
+  nginx_conf_v5:
     file: ./nginx/conf.d/default.conf
